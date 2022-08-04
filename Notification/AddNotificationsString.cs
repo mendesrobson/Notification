@@ -289,49 +289,95 @@ namespace Notification
                 return this;
             }
 
-            string tempCpf;
-            string digito;
-            int soma;
+            Span<int> tempCPF = stackalloc int[11];
+
+            int pos = 0;
+            int dig = 0;
+
+            var todosIguais = true;
+
             int resto;
-            cpf = cpf.Trim();
-            cpf = cpf.Replace(".", "").Replace("-", "");
-            if (cpf.Length != 11)
+
+            for (int i = 0; i < cpf.Length; i++)
+            {
+                dig = cpf[i] - '0';
+
+                if (dig >= 0 && dig <= 9)
+                {
+                    if (pos > 10) 
+                    {
+                        _notifiableObject.AddNotification(name, string.IsNullOrEmpty(message) ?
+                                            Message.IfNotCpf.ToFormat(name) : message);
+                        return this;
+                    }
+
+                    tempCPF[pos] = dig;
+
+                    if (todosIguais && (pos > 0))
+                    {
+                        todosIguais = tempCPF[pos] == tempCPF[pos - 1];
+                    }
+
+                    pos++;
+                }
+            }
+
+            if (pos != 11)
             {
                 _notifiableObject.AddNotification(name, string.IsNullOrEmpty(message) ?
                     Message.IfNotCpf.ToFormat(name) : message);
                 return this;
             }
 
-            tempCpf = cpf.Substring(0, 9);
-            soma = 0;
+            if (todosIguais)
+            {
+                _notifiableObject.AddNotification(name, string.IsNullOrEmpty(message) ?
+                    Message.IfNotCpf.ToFormat(name) : message);
+                return this;
+            }
+
+            int soma1 = 0;
+            int soma2 = 0;
 
             for (int i = 0; i < 9; i++)
-                soma += int.Parse(tempCpf[i].ToString()) * multiplicador1CPF[i];
-            resto = soma % 11;
-            if (resto < 2)
-                resto = 0;
-            else
-                resto = 11 - resto;
-            digito = resto.ToString();
-            tempCpf = tempCpf + digito;
-            soma = 0;
-            for (int i = 0; i < 10; i++)
-                soma += int.Parse(tempCpf[i].ToString()) * multiplicador2CPF[i];
-            resto = soma % 11;
-            if (resto < 2)
-                resto = 0;
-            else
-                resto = 11 - resto;
-            digito = digito + resto.ToString();
-            bool isValid = cpf.EndsWith(digito);
+                soma1 += tempCPF[i] * multiplicador1CPF[i];
+            
 
-            if (isValid == false)
+            for (int i = 0; i < 10; i++)
+                soma2 += tempCPF[i] * multiplicador2CPF[i];
+
+            resto = (soma1 % 11);
+
+            if (resto < 2)
+                resto = 0;
+            else
+                resto = 11 - resto;
+
+            int digito1 = resto;
+
+            if (tempCPF[12] != digito1)
             {
                 _notifiableObject.AddNotification(name, string.IsNullOrEmpty(message) ?
                     Message.IfNotCpf.ToFormat(name) : message);
                 return this;
             }
 
+            soma2 += digito1 * multiplicador2CPF[12];
+
+            resto = (soma2 % 11);
+
+            if (resto < 2)
+                resto = 0;
+            else
+                resto = 11 - resto;
+
+            int digito2 = resto;
+
+            if (tempCPF[10] == resto)
+                return this;
+
+            _notifiableObject.AddNotification(name, string.IsNullOrEmpty(message) ?
+                  Message.IfNotCpf.ToFormat(name) : message);
             return this;
         }
 
@@ -824,7 +870,7 @@ namespace Notification
                 return this;
             }
 
-            if (todosIguais) 
+            if (todosIguais)
             {
                 _notifiableObject.AddNotification(objectName, string.IsNullOrEmpty(message) ?
                                      Message.IfNotCnpj.ToFormat(objectName) : message);
@@ -849,7 +895,7 @@ namespace Notification
 
             int digito1 = resto;
 
-            if (tempCnpj[12] != digito1) 
+            if (tempCnpj[12] != digito1)
             {
                 _notifiableObject.AddNotification(objectName, string.IsNullOrEmpty(message) ?
                                      Message.IfNotCnpj.ToFormat(objectName) : message);
