@@ -45,7 +45,7 @@ namespace Notification.Resources {
             {
                 if (object.ReferenceEquals(resourceMan, null))
                 {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("prmToolkit.NotificationPattern.Resources.Message", typeof(Message).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NotificationPattern.Resources.Message", typeof(Message).GetTypeInfo().Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
